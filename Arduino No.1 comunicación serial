@@ -15,3 +15,14 @@ int mensaje = 0;
 unsigned long tiempoAnterior;
 
 void setup() {
+ // Configurar PD3 como entrada con pull-up
+  DDRD &= ~(1 << DDD3);
+  PORTD |= (1 << PORTD3);
+
+  // Configurar PD4 como salida para el LED
+  DDRD |= (1 << DDD4);
+  
+  // Configurar el pin del botón como entrada
+  PCICR |= (1 << PCIE2);  // Habilitar el grupo de interrupciones del puerto D
+  PCMSK2 |= (1 << PCINT19);  // Seleccionar el pin a monitorear en el registro PCMSK2, Bit 19 corresponde a PD3
+  
