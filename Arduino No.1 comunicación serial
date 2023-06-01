@@ -52,3 +52,12 @@ void loop() {
         for (int j = 0; j < 4; j++) {
           EEPROM.put(j * sizeof(int) + 1, posiciones[j]);
         }
+      } else {
+        for (int j = 0; j < 4; j++) {
+          EEPROM.get(j * sizeof(int) + 1, posiciones[j]);
+        }
+        EEPROM.write(0, 0);
+      }
+      Serial.write(255);
+    }
+  }
