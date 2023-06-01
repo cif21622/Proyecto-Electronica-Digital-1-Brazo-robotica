@@ -1,0 +1,39 @@
+#include <avr/io.h>
+
+void setup() {
+  // Configurar el registro TCCR1A
+  TCCR1A = 0b10100010; // Utilizar modo de salida PWM en pin OC1A (pin 9) y no invertir la señal
+
+  // Configurar el registro TCCR1B
+  TCCR1B = 0b00011001; // Utilizar modo de salida PWM, prescaler de 1
+
+  // Configurar el registro ICR1 para establecer el período del PWM
+  ICR1 = 19999; // Frecuencia de 50 Hz (20 ms de período)
+
+  // Configurar el registro DDRB para establecer el pin 9 (OC1A) como salida
+  DDRB |= (1 << DDB1); // Pin 9 (OC1A) como salida
+
+  // Habilitar la referencia de voltaje interna de 1.1V y seleccionar el pin A0 como entrada analógica
+  ADMUX = (1 << REFS0);
+  ADMUX |= (1 << MUX0);
+
+  // Habilitar el conversor analógico-digital (ADC) y establecer el prescaler en 128 para una frecuencia de muestreo de 125 kHz
+  ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
+}
+
+void loop() {
+  // Leer el valor de la entrada analógica A0
+  int sensorValue = analogRead(A0);
+
+  // Mapear el valor de la entrada analógica al rango de ángulos (0 a 180 grados)
+  int angle = map(sensorValue, 0, 1023, 0, 180);
+
+  // Mover el servomotor a la posición correspondiente al ángulo leído
+  moveServo(angle);
+}
+
+void moveServo(int angle) {
+  // Calcular el valor del registro OCR1A para establecer el ancho del pulso del servo
+  int pulseWidth = map(angle, 0, 180, 1000, 2000);
+  OCR1A = pulseWidth;
+}
