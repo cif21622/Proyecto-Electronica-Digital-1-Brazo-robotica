@@ -7,7 +7,6 @@ LiquidCrystal lcd(12, 11, 10, 9, 8, 7);
 const int buttonPin = 2;  // Botón conectado al pin digital 2
 const int ledPin = 4;     // Pin PD4 para el LED
 
-
 int posiciones[4];
 int estadoAnteriorBoton = HIGH;
 
@@ -15,7 +14,7 @@ int mensaje = 0;
 unsigned long tiempoAnterior;
 
 void setup() {
- // Configurar PD3 como entrada con pull-up
+  // Configurar PD3 como entrada con pull-up
   DDRD &= ~(1 << DDD3);
   PORTD |= (1 << PORTD3);
 
@@ -26,3 +25,13 @@ void setup() {
   PCICR |= (1 << PCIE2);  // Habilitar el grupo de interrupciones del puerto D
   PCMSK2 |= (1 << PCINT19);  // Seleccionar el pin a monitorear en el registro PCMSK2, Bit 19 corresponde a PD3
   
+  // Habilitar interrupciones globales
+  sei();
+  
+  pinMode(buttonPin, INPUT_PULLUP);
+  
+  // Configurar registros ADC según sea necesario para tu hardware y sensores
+  ADMUX = _BV(REFS0); // AVcc con condensador en AREF
+  ADCSRA = _BV(ADEN) | _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0); // Habilitar ADC y preescalado /128
+  
+  Serial.begin(9600);
