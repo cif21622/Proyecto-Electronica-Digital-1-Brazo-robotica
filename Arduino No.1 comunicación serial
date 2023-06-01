@@ -6,3 +6,12 @@ LiquidCrystal lcd(12, 11, 10, 9, 8, 7);
 
 const int buttonPin = 2;  // Botón conectado al pin digital 2
 const int ledPin = 4;     // Pin PD4 para el LED
+
+
+int posiciones[4];
+int estadoAnteriorBoton = HIGH;
+
+int mensaje = 0;
+unsigned long tiempoAnterior;
+
+void setup() {
