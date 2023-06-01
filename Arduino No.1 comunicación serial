@@ -4,9 +4,7 @@
 // Inicializa la biblioteca con los números de los pines de interfaz
 LiquidCrystal lcd(12, 11, 10, 9, 8, 7);
 
-const int buttonPin = 2;  // Botón conectado al pin digital 2
-const int ledPin = 4;     // Pin PD4 para el LED
-
+const int botonPin = 2; // Botón conectado al pin digital 2
 int posiciones[4];
 int estadoAnteriorBoton = HIGH;
 
@@ -14,24 +12,43 @@ int mensaje = 0;
 unsigned long tiempoAnterior;
 
 void setup() {
-  // Configurar PD3 como entrada con pull-up
-  DDRD &= ~(1 << DDD3);
-  PORTD |= (1 << PORTD3);
+  
+  
+    Serial.begin(9600);
 
-  // Configurar PD4 como salida para el LED
-  DDRD |= (1 << DDD4);
-  
-  // Configurar el pin del botón como entrada
-  PCICR |= (1 << PCIE2);  // Habilitar el grupo de interrupciones del puerto D
-  PCMSK2 |= (1 << PCINT19);  // Seleccionar el pin a monitorear en el registro PCMSK2, Bit 19 corresponde a PD3
-  
-  // Habilitar interrupciones globales
-  sei();
-  
-  pinMode(buttonPin, INPUT_PULLUP);
-  
+
+  pinMode(botonPin, INPUT_PULLUP);
   // Configurar registros ADC según sea necesario para tu hardware y sensores
   ADMUX = _BV(REFS0); // AVcc con condensador en AREF
   ADCSRA = _BV(ADEN) | _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0); // Habilitar ADC y preescalado /128
   
   Serial.begin(9600);
+  
+  // Configura el número de columnas y filas de la LCD
+  lcd.begin(16, 2);
+}
+
+void loop() {
+  for (int i = 0; i < 4; i++) {
+    ADMUX = (ADMUX & 0xF8) | i; // Seleccionar canal ADC
+    ADCSRA |= _BV(ADSC); // Iniciar conversión
+    while (ADCSRA & _BV(ADSC)); // Esperar hasta que se complete la conversión
+
+    int lectura = ADC;
+    posiciones[i] = map(lectura, 0, 1023, 10, 150);
+
+    Serial.write(posiciones[i]);
+    delay(50);
+  }
+
+  bool estadoBoton = digitalRead(botonPin);
+  if (!estadoBoton && estadoBoton != estadoAnteriorBoton) {
+    delay(50);
+    estadoBoton = digitalRead(botonPin);
+    if (!estadoBoton) {
+      int primerByte = EEPROM.read(0);
+      if (primerByte == 0) {
+        EEPROM.write(0, 1);
+        for (int j = 0; j < 4; j++) {
+          EEPROM.put(j * sizeof(int) + 1, posiciones[j]);
+        }
