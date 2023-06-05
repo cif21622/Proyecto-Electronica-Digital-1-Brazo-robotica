@@ -1,1 +1,13 @@
+// Arduino Esclavo/Receiver
 
+
+#include <Servo.h>
+#include <EEPROM.h>
+
+Servo servo1;
+Servo servo2;
+Servo servo3;
+Servo servo4;
+
+int ultimaPosicion[4] = {0, 0, 0, 0};
+bool guardarPosiciones = false;
