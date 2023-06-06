@@ -73,36 +73,36 @@ void loop() {
       Serial.write(255);
     }
   }
-  estadoAnteriorBoton = estadoBoton;
+
   if (millis() - tiempoAnterior > 4000) {
     tiempoAnterior = millis();
     lcd.clear();
     lcd.setCursor(0, 0);
     switch (mensaje) {
       case 0: 
-        lcd.print("Interrupcion 1:");
+        lcd.print("Proyecto");
         lcd.setCursor(0, 1);
-        lcd.print("Servos a 90");
+        lcd.print("Final");
         break;
       case 1:
-        lcd.print("Interrupcion 2:");
+        lcd.print("Electronica");
         lcd.setCursor(0, 1);
-        lcd.print("Servos a 0");
+        lcd.print("Digital 1");
         break;
       case 2:
-        lcd.print("Interrupcion 3:");
+        lcd.print("Brazo");
         lcd.setCursor(0, 1);
-        lcd.print("Timer");
+        lcd.print("Robotico");
         break;
       case 3:
-        lcd.print("Interrupcion 4:");
+        lcd.print("Ernesto Chavez");
         lcd.setCursor(0, 1);
-        lcd.print("Servo 4 a 90");
+        lcd.print("21441");
         break;
       case 4:
-        lcd.print("Interrupcion 5:");
+        lcd.print("Cesar Cifuentes");
         lcd.setCursor(0, 1);
-        lcd.print("Base gira");
+        lcd.print("21622");
         break;
     }
     mensaje++;
