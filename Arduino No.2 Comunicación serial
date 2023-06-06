@@ -1,3 +1,6 @@
+// Arduino Esclavo/Receiver
+
+
 #include <Servo.h>
 #include <EEPROM.h>
 
@@ -9,51 +12,18 @@ Servo servo4;
 int ultimaPosicion[4] = {0, 0, 0, 0};
 bool guardarPosiciones = false;
 
+//
+volatile byte lastPinDState = 0;
+
 void setup() {
+ 
+  // Configurar PD2, PD3, PD4, PD5, PD6 como entrada con pull-up
+  DDRD &= ~((1 << DDD2) | (1 << DDD3) | (1 << DDD4) | (1 << DDD5) | (1 << DDD6));
+  PORTD |= (1 << PORTD2) | (1 << PORTD3) | (1 << PORTD4) | (1 << PORTD5) | (1 << PORTD6);
+
+  // Configuración de las interrupciones
+  PCIFR |= (1 << PCIF2); // Limpiar bandera de interrupción en el puerto D
+  PCICR |= (1 << PCIE2); // Habilitar el grupo de interrupciones del puerto D
+  PCMSK2 |= (1 << PCINT18) | (1 << PCINT19) | (1 << PCINT20) | (1 << PCINT21) | (1 << PCINT22); // Seleccionar los pines a monitorear en el registro PCMSK2
+
   Serial.begin(9600);
-
-  servo1.attach(8);
-  servo2.attach(9);
-  servo3.attach(10);
-  servo4.attach(11);
-}
-
-void loop() {
-  if (Serial.available() >= 4) {
-    for (int i = 0; i < 4; i++) {
-      int pos = Serial.read();
-
-      if (pos == 255) {
-        guardarPosiciones = !guardarPosiciones;
-        if (guardarPosiciones) {
-          // Si se ha recibido el código especial, guardamos las posiciones actuales
-          for (int j = 0; j < 4; j++) {
-            int posGuardada = ultimaPosicion[j];
-            EEPROM.put(j * sizeof(int), posGuardada);
-          }
-        } else {
-          // Si se ha recibido el código especial nuevamente, recuperamos las posiciones guardadas
-          for (int j = 0; j < 4; j++) {
-            int posGuardada;
-            EEPROM.get(j * sizeof(int), posGuardada);
-            switch(j) {
-              case 0: servo1.write(posGuardada); break;
-              case 1: servo2.write(posGuardada); break;
-              case 2: servo3.write(posGuardada); break;
-              case 3: servo4.write(posGuardada); break;
-            }
-            ultimaPosicion[j] = posGuardada;
-          }
-        }
-      } else if (pos >= 10 && pos <= 150) {
-        switch (i) {
-          case 0: servo1.write(pos); break;
-          case 1: servo2.write(pos); break;
-          case 2: servo3.write(pos); break;
-          case 3: servo4.write(pos); break;
-        }
-        ultimaPosicion[i] = pos;
-      }
-    }
-  }
-}
