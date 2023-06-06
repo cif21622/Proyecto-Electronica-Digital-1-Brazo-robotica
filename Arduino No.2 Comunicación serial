@@ -92,3 +92,8 @@ ISR(PCINT2_vect) {
     servo2.write(90);
   }
 
+  // Verifica si el pin 4 del puerto D cambió a HIGH (botón presionado)
+  if ((currentPinDState & (1 << PIND4)) && !(lastPinDState & (1 << PIND4))) {
+    servo3.write(45);
+  }
+
