@@ -1,6 +1,3 @@
-// Arduino Esclavo/Receiver
-
-
 #include <Servo.h>
 #include <EEPROM.h>
 
@@ -13,9 +10,6 @@ int ultimaPosicion[4] = {0, 0, 0, 0};
 bool guardarPosiciones = false;
 
 void setup() {
-  
-
-  
   Serial.begin(9600);
 
   servo1.attach(8);
@@ -23,6 +17,7 @@ void setup() {
   servo3.attach(10);
   servo4.attach(11);
 }
+
 void loop() {
   if (Serial.available() >= 4) {
     for (int i = 0; i < 4; i++) {
@@ -33,7 +28,8 @@ void loop() {
         if (guardarPosiciones) {
           // Si se ha recibido el código especial, guardamos las posiciones actuales
           for (int j = 0; j < 4; j++) {
-            EEPROM.put(j * sizeof(int), ultimaPosicion[j]);
+            int posGuardada = ultimaPosicion[j];
+            EEPROM.put(j * sizeof(int), posGuardada);
           }
         } else {
           // Si se ha recibido el código especial nuevamente, recuperamos las posiciones guardadas
@@ -46,6 +42,7 @@ void loop() {
               case 2: servo3.write(posGuardada); break;
               case 3: servo4.write(posGuardada); break;
             }
+            ultimaPosicion[j] = posGuardada;
           }
         }
       } else if (pos >= 10 && pos <= 150) {
