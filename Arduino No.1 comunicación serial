@@ -4,9 +4,7 @@
 // Inicializa la biblioteca con los números de los pines de interfaz
 LiquidCrystal lcd(12, 11, 10, 9, 8, 7);
 
-const int buttonPin = 2;  // Botón conectado al pin digital 2
-const int ledPin = 4;     // Pin PD4 para el LED
-
+const int botonPin = 2; // Botón conectado al pin digital 2
 int posiciones[4];
 int estadoAnteriorBoton = HIGH;
 
@@ -14,27 +12,29 @@ int mensaje = 0;
 unsigned long tiempoAnterior;
 
 void setup() {
-  // Configurar PD3 como entrada con pull-up
-  DDRD &= ~(1 << DDD3);
-  PORTD |= (1 << PORTD3);
+  
+DDRB = B00100000; 
+Serial.begin(9600);
 
-  // Configurar PD4 como salida para el LED
-  DDRD |= (1 << DDD4);
-  
-  // Configurar el pin del botón como entrada
-  PCICR |= (1 << PCIE2);  // Habilitar el grupo de interrupciones del puerto D
-  PCMSK2 |= (1 << PCINT19);  // Seleccionar el pin a monitorear en el registro PCMSK2, Bit 19 corresponde a PD3
-  
-  // Habilitar interrupciones globales
-  sei();
-  
-  pinMode(buttonPin, INPUT_PULLUP);
-  
+cli(); //Detener interrupciones hasta configurar todo
+  TCCR1A = 0; // set entire TCCR1A register to 0
+  TCCR1B = 0; // same for TCCR1B
+  TCNT1  = 0; // initialize counter value to 0
+  // set compare match register for 2 Hz increments
+  OCR1A = 31249; // = 16000000 / (256 * 2) - 1 (must be <65536)
+  // turn on CTC mode
+  TCCR1B |= (1 << WGM12);
+  // Set CS12, CS11 and CS10 bits for 256 prescaler
+  TCCR1B |= (1 << CS12) | (0 << CS11) | (0 << CS10);
+  // enable timer compare interrupt
+  TIMSK1 |= (1 << OCIE1A);
+  sei(); // Permitir interrupciones
+
+
+  pinMode(botonPin, INPUT_PULLUP);
   // Configurar registros ADC según sea necesario para tu hardware y sensores
   ADMUX = _BV(REFS0); // AVcc con condensador en AREF
   ADCSRA = _BV(ADEN) | _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0); // Habilitar ADC y preescalado /128
-  
-  Serial.begin(9600);
   
   // Configura el número de columnas y filas de la LCD
   lcd.begin(16, 2);
@@ -53,10 +53,10 @@ void loop() {
     delay(50);
   }
 
-  bool estadoBoton = digitalRead(buttonPin);
+  bool estadoBoton = digitalRead(botonPin);
   if (!estadoBoton && estadoBoton != estadoAnteriorBoton) {
     delay(50);
-    estadoBoton = digitalRead(buttonPin);
+    estadoBoton = digitalRead(botonPin);
     if (!estadoBoton) {
       int primerByte = EEPROM.read(0);
       if (primerByte == 0) {
@@ -74,7 +74,6 @@ void loop() {
     }
   }
   estadoAnteriorBoton = estadoBoton;
-
   if (millis() - tiempoAnterior > 4000) {
     tiempoAnterior = millis();
     lcd.clear();
