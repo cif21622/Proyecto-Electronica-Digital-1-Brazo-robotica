@@ -110,3 +110,18 @@ void loop() {
     if (mensaje > 4) mensaje = 0;
   }
 }
+
+
+ISR(PCINT2_vect) {
+  cli(); 
+  // Verificar si el pin 3 del puerto D cambió a HIGH
+  if (PIND & (1 << PIND3)) {       
+    // Código cuando PD3 pasa a HIGH
+    PORTD &= ~(1 << PORTD4); 
+  } else {
+    // Código cuando PD3 pasa a LOW
+    PORTD |= (1 << PORTD4);  // Encender el LED en PD4
+  }
+  sei();  // Habilitar interrupciones globales
+}
+
