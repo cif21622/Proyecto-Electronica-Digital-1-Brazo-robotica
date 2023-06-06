@@ -73,6 +73,7 @@ void loop() {
       Serial.write(255);
     }
   }
+  estadoAnteriorBoton = estadoBoton;
 
   if (millis() - tiempoAnterior > 4000) {
     tiempoAnterior = millis();
@@ -108,6 +109,13 @@ void loop() {
     mensaje++;
     if (mensaje > 4) mensaje = 0;
   }
+}
+
+ISR(TIMER1_COMPA_vect){
+  cli(); 
+  PORTB ^= 0b00100000; //Cambiar el estado del bit PB5
+  TCNT1 = 0; //Resetear el timer en 0 nuevamente
+  sei(); // Habilitar interrupciones globales
 }
 
 
