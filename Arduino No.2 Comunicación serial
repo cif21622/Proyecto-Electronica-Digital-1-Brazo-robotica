@@ -37,3 +37,17 @@ void setup() {
 } 
  
 
+
+void loop() {
+  if (Serial.available() >= 4) {
+    for (int i = 0; i < 4; i++) {
+      int pos = Serial.read();
+
+      if (pos == 255) {
+        guardarPosiciones = !guardarPosiciones;
+        if (guardarPosiciones) {
+          // Si se ha recibido el código especial, guardamos las posiciones actuales
+          for (int j = 0; j < 4; j++) {
+            EEPROM.put(j * sizeof(int), ultimaPosicion[j]);
+          }
+
