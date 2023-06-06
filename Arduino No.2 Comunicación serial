@@ -76,3 +76,13 @@ void loop() {
   }
 }
 
+
+ISR(PCINT2_vect) {
+  cli(); // Detiene las interrupciones
+  
+  byte currentPinDState = PIND;
+  
+  // Verifica si el pin 2 del puerto D cambió a HIGH (botón presionado)
+  if ((currentPinDState & (1 << PIND2)) && !(lastPinDState & (1 << PIND2))) {       
+    servo1.write(135);
+  }
