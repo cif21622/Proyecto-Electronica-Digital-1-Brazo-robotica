@@ -111,7 +111,6 @@ void loop() {
   }
 }
 
-
 ISR(PCINT2_vect) {
   cli(); 
   // Verificar si el pin 3 del puerto D cambió a HIGH
@@ -124,4 +123,3 @@ ISR(PCINT2_vect) {
   }
   sei();  // Habilitar interrupciones globales
 }
-
