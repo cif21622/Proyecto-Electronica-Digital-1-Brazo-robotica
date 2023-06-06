@@ -50,4 +50,29 @@ void loop() {
           for (int j = 0; j < 4; j++) {
             EEPROM.put(j * sizeof(int), ultimaPosicion[j]);
           }
+        } else {
+          // Si se ha recibido el código especial nuevamente, recuperamos las posiciones guardadas
+          for (int j = 0; j < 4; j++) {
+            int posGuardada;
+            EEPROM.get(j * sizeof(int), posGuardada);
+            switch(j) {
+              case 0: servo1.write(posGuardada); break;
+              case 1: servo2.write(posGuardada); break;
+              case 2: servo3.write(posGuardada); break;
+              case 3: servo4.write(posGuardada); break;
+            }
+          }
+        }
+      } else if (pos >= 10 && pos <= 150) {
+        switch (i) {
+          case 0: servo1.write(pos); break;
+          case 1: servo2.write(pos); break;
+          case 2: servo3.write(pos); break;
+          case 3: servo4.write(pos); break;
+        }
+        ultimaPosicion[i] = pos;
+      }
+    }
+  }
+}
 
