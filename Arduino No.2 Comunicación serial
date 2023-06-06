@@ -1,42 +1,25 @@
-// Arduino Esclavo/Receiver
-
-
 #include <Servo.h>
 #include <EEPROM.h>
 
-Servo servo1;
-Servo servo2;
-Servo servo3;
-Servo servo4;
-
+Servo servos[4];
 int ultimaPosicion[4] = {0, 0, 0, 0};
 bool guardarPosiciones = false;
 
-//
-volatile byte lastPinDState = 0;
-
 void setup() {
- 
-  // Configurar PD2, PD3, PD4, PD5, PD6 como entrada con pull-up
-  DDRD &= ~((1 << DDD2) | (1 << DDD3) | (1 << DDD4) | (1 << DDD5) | (1 << DDD6));
-  PORTD |= (1 << PORTD2) | (1 << PORTD3) | (1 << PORTD4) | (1 << PORTD5) | (1 << PORTD6);
-
-  // Configuración de las interrupciones
-  PCIFR |= (1 << PCIF2); // Limpiar bandera de interrupción en el puerto D
-  PCICR |= (1 << PCIE2); // Habilitar el grupo de interrupciones del puerto D
-  PCMSK2 |= (1 << PCINT18) | (1 << PCINT19) | (1 << PCINT20) | (1 << PCINT21) | (1 << PCINT22); // Seleccionar los pines a monitorear en el registro PCMSK2
+  for (int i = 0; i < 4; i++) {
+    servos[i].attach(8 + i);
+  }
 
   Serial.begin(9600);
 
-  servo1.attach(8);
-  servo2.attach(9);
-  servo3.attach(10);
-  servo4.attach(11);
+  pinMode(2, INPUT_PULLUP);
+  pinMode(3, INPUT_PULLUP);
+  pinMode(4, INPUT_PULLUP);
+  pinMode(5, INPUT_PULLUP);
+  pinMode(6, INPUT_PULLUP);
 
-  lastPinDState = PIND;
-} 
- 
-
+  EEPROM.get(0, ultimaPosicion);
+}
 
 void loop() {
   if (Serial.available() >= 4) {
@@ -46,54 +29,36 @@ void loop() {
       if (pos == 255) {
         guardarPosiciones = !guardarPosiciones;
         if (guardarPosiciones) {
-          // Si se ha recibido el código especial, guardamos las posiciones actuales
-          for (int j = 0; j < 4; j++) {
-            EEPROM.put(j * sizeof(int), ultimaPosicion[j]);
-          }
+          EEPROM.put(0, ultimaPosicion);
         } else {
-          // Si se ha recibido el código especial nuevamente, recuperamos las posiciones guardadas
+          EEPROM.get(0, ultimaPosicion);
           for (int j = 0; j < 4; j++) {
-            int posGuardada;
-            EEPROM.get(j * sizeof(int), posGuardada);
-            switch(j) {
-              case 0: servo1.write(posGuardada); break;
-              case 1: servo2.write(posGuardada); break;
-              case 2: servo3.write(posGuardada); break;
-              case 3: servo4.write(posGuardada); break;
-            }
+            servos[j].write(ultimaPosicion[j]);
           }
         }
       } else if (pos >= 10 && pos <= 150) {
-        switch (i) {
-          case 0: servo1.write(pos); break;
-          case 1: servo2.write(pos); break;
-          case 2: servo3.write(pos); break;
-          case 3: servo4.write(pos); break;
-        }
+        servos[i].write(pos);
         ultimaPosicion[i] = pos;
       }
     }
   }
 }
 
-
 ISR(PCINT2_vect) {
-  cli(); // Detiene las interrupciones
-  
   byte currentPinDState = PIND;
-  
-  // Verifica si el pin 2 del puerto D cambió a HIGH (botón presionado)
-  if ((currentPinDState & (1 << PIND2)) && !(lastPinDState & (1 << PIND2))) {       
-    servo1.write(135);
+
+  if (bitRead(currentPinDState, 2) && !bitRead(lastPinDState, 2)) {
+    servos[0].write(135);
   }
 
-  // Verifica si el pin 3 del puerto D cambió a LOW (botón presionado)
-  if (!(currentPinDState & (1 << PIND3)) && (lastPinDState & (1 << PIND3))) {
-    servo2.write(90);
+  if (!bitRead(currentPinDState, 3) && bitRead(lastPinDState, 3)) {
+    servos[1].write(90);
   }
 
-  // Verifica si el pin 4 del puerto D cambió a HIGH (botón presionado)
-  if ((currentPinDState & (1 << PIND4)) && !(lastPinDState & (1 << PIND4))) {
-    servo3.write(45);
+  if (bitRead(currentPinDState, 4) && !bitRead(lastPinDState, 4)) {
+    servos[2].write(45);
   }
+    }
 
+  lastPinDState = currentPinDState;
+}
